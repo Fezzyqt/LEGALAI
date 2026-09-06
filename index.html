@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='5' fill='%230a0a0a'/><text x='50%25' y='72%25' font-family='Georgia,serif' font-weight='bold' font-size='18' fill='white' text-anchor='middle'>B.</text></svg>"/>
+<title>Contract Analyser — BDP</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --black: #0A0A0A;
+  --white: #FFFFFF;
+  --off-white: #F5F5F3;
+  --light-gray: #EBEBEB;
+  --mid-gray: #AAAAAA;
+  --dark-gray: #3A3A3A;
+  --border: #E0E0E0;
+  --red: #C8281E;
+  --red-bg: #FBF0EF;
+  --amber: #B85C00;
+  --amber-bg: #FDF4EB;
+  --blue: #1A4B8C;
+  --blue-bg: #EDF2FA;
+  --pink: #7D1F5E;
+  --pink-bg: #F7EDF4;
+  --green: #1A6B3A;
+  --green-bg: #EBF5F0;
+  --diff-add: #E3F3E9;
+  --diff-add-text: #1A6B3A;
+  --diff-del: #FBEAEA;
+  --diff-del-text: #B0241A;
+}
+
+html, body { height: 100%; }
+body {
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  background: var(--off-white);
+  color: var(--black);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-size: 13px;
+  letter-spacing: -0.01em;
+}
+
+/* ── HEADER ── */
+.header {
+  background: var(--black);
+  color: var(--white);
+  height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  flex-shrink: 0;
+  border-bottom: 1px solid #222;
+}
+.logo { font-size: 22px; font-weight: 600; letter-spacing: -0.04em; margin-right: 12px; flex-shrink: 0; }
+.logo-sep { width: 1px; height: 20px; background: #444; margin: 0 16px; flex-shrink: 0; }
+.app-title { font-size: 12px; font-weight: 400; color: #999; letter-spacing: 0.06em; text-transform: uppercase; flex: 1; }
+.hbtn {
+  background: transparent; border: 1px solid #444; color: #ccc;
+  padding: 6px 14px; border-radius: 2px; cursor: pointer; font-size: 12px;
+  font-family: inherit; letter-spacing: 0.02em; transition: all 0.15s;
+  white-space: nowrap; margin-left: 8px;
+}
+.hbtn:hover { background: #1a1a1a; border-color: #666; color: #fff; }
+.hbtn.primary { background: var(--white); border-color: var(--white); color: var(--black); font-weight: 500; }
+.hbtn.primary:hover { background: #ddd; border-color: #ddd; }
+.hbtn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+
+
+/* ── PROGRESS ── */
+.progress-bar { height: 2px; background: #222; flex-shrink: 0; }
+.progress-inner { height: 100%; background: var(--black); width: 0%; transition: width 0.5s ease; }
+
+/* ── REVISION STRIP ── */
+.revision-strip {
+  display: flex; align-items: center; gap: 8px; padding: 10px 24px;
+  background: var(--white); border-bottom: 1px solid var(--border);
+  overflow-x: auto; flex-shrink: 0;
+}
+.revision-strip-label { font-size: 11px; color: var(--mid-gray); letter-spacing: 0.04em; text-transform: uppercase; margin-right: 6px; flex-shrink: 0; }
+.revision-chip {
+  display: flex; align-items: center; gap: 7px; padding: 5px 6px 5px 12px;
+  border: 1px solid var(--border); border-radius: 2px; font-size: 12px;
+  background: var(--off-white); flex-shrink: 0; cursor: pointer; transition: all 0.15s;
+}
+.revision-chip:hover { border-color: var(--mid-gray); background: var(--white); }
+.revision-chip.current { border-color: var(--black); background: var(--white); border-width: 1.5px; }
+.revision-chip-label { font-weight: 600; letter-spacing: 0.02em; }
+.revision-chip-name { color: var(--mid-gray); font-size: 11px; max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.revision-chip-remove { width: 16px; height: 16px; border-radius: 50%; border: none; background: transparent; color: var(--mid-gray); cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.revision-chip-remove:hover { background: var(--red); color: var(--white); }
+.diff-legend { display: flex; gap: 14px; margin-left: auto; flex-shrink: 0; }
+.diff-legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--mid-gray); }
+.diff-legend-swatch { width: 9px; height: 9px; border-radius: 2px; }
+
+/* ── BODY ── */
+.body { display: flex; flex: 1; overflow: hidden; }
+.left { flex: 1; display: flex; flex-direction: column; background: var(--white); border-right: 1px solid var(--border); min-width: 0; }
+.doc-bar { padding: 10px 24px; border-bottom: 1px solid var(--border); font-size: 11px; color: var(--mid-gray); letter-spacing: 0.04em; text-transform: uppercase; display: flex; align-items: center; gap: 8px; background: var(--white); flex-shrink: 0; }
+.doc-bar-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--mid-gray); flex-shrink: 0; }
+.doc-area { flex: 1; overflow-y: auto; padding: 40px 56px; line-height: 1.9; font-size: 13.5px; color: #1a1a1a; }
+.doc-area p { margin-bottom: 12px; text-align: justify; }
+.doc-area h3 { font-size: 11px; font-weight: 600; color: var(--black); margin: 24px 0 8px; letter-spacing: 0.1em; text-transform: uppercase; padding-bottom: 6px; border-bottom: 1px solid var(--black); }
+
+/* ── LANDING / CONTRACT PICKER ── */
+.empty-doc { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; height: 100%; padding: 56px; gap: 16px; }
+.empty-eyebrow { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mid-gray); font-weight: 500; }
+.empty-doc h2 { font-size: 32px; font-weight: 300; letter-spacing: -0.03em; line-height: 1.15; max-width: 440px; }
+.empty-doc p { font-size: 14px; color: var(--dark-gray); max-width: 380px; line-height: 1.6; font-weight: 300; }
+
+.contract-pick-btn {
+  background: var(--white); border: 1px solid var(--border); border-radius: 2px;
+  padding: 14px 18px; cursor: pointer; font-family: inherit; transition: all 0.15s;
+  text-align: left; display: flex; flex-direction: column; gap: 4px; width: 100%;
+}
+.contract-pick-btn:hover { border-color: var(--black); background: var(--off-white); transform: translateX(2px); }
+.contract-pick-label { font-size: 13px; font-weight: 500; color: var(--black); }
+.contract-pick-sub { font-size: 11px; color: var(--mid-gray); }
+
+mark { border-radius: 2px; padding: 1px 3px; cursor: pointer; transition: outline 0.1s; }
+mark.high { background: var(--red-bg); border-bottom: 2px solid var(--red); }
+mark.medium { background: var(--amber-bg); border-bottom: 2px solid var(--amber); }
+mark.low { background: var(--blue-bg); border-bottom: 2px solid var(--blue); }
+mark.active-mark { outline: 2px solid var(--black); outline-offset: 2px; }
+.diff-add { background: var(--diff-add); color: var(--diff-add-text); padding: 1px 2px; border-radius: 2px; }
+.diff-del { background: var(--diff-del); color: var(--diff-del-text); text-decoration: line-through; padding: 1px 2px; border-radius: 2px; opacity: 0.85; }
+
+.status-bar { padding: 5px 24px; font-size: 11px; color: var(--mid-gray); background: var(--off-white); border-top: 1px solid var(--border); flex-shrink: 0; letter-spacing: 0.03em; }
+
+.resize-handle { width: 4px; background: var(--border); cursor: col-resize; flex-shrink: 0; transition: background 0.15s; position: relative; z-index: 10; }
+.resize-handle:hover, .resize-handle.dragging { background: var(--black); }
+
+.right { width: 360px; min-width: 220px; max-width: 640px; flex-shrink: 0; display: flex; flex-direction: column; background: var(--off-white); }
+.panel-head { padding: 14px 16px 12px; border-bottom: 1px solid var(--border); background: var(--white); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.panel-head-title { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+.score-pill { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 2px; letter-spacing: 0.02em; }
+.score-high { background: var(--red-bg); color: var(--red); }
+.score-med { background: var(--amber-bg); color: var(--amber); }
+.score-ok { background: var(--green-bg); color: var(--green); }
+
+.tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--white); flex-shrink: 0; }
+.tab { flex: 1; padding: 10px 8px; font-size: 11px; font-weight: 500; text-align: center; cursor: pointer; border-bottom: 2px solid transparent; color: var(--mid-gray); letter-spacing: 0.04em; text-transform: uppercase; transition: all 0.15s; }
+.tab.active { border-bottom-color: var(--black); color: var(--black); }
+.tab:hover:not(.active) { color: var(--dark-gray); }
+
+.issues-scroll { flex: 1; overflow-y: auto; padding: 12px; }
+.issue-card { background: var(--white); border: 1px solid var(--border); border-radius: 2px; padding: 12px 14px; margin-bottom: 8px; cursor: pointer; transition: border-color 0.15s; }
+.issue-card:hover { border-color: var(--black); }
+.issue-card.active { border-color: var(--black); border-width: 2px; }
+.issue-top { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 5px; }
+.badge { font-size: 9px; font-weight: 700; letter-spacing: 0.08em; padding: 2px 7px; border-radius: 2px; white-space: nowrap; flex-shrink: 0; margin-top: 2px; text-transform: uppercase; }
+.badge-high { background: var(--red-bg); color: var(--red); }
+.badge-medium { background: var(--amber-bg); color: var(--amber); }
+.badge-low { background: var(--blue-bg); color: var(--blue); }
+.badge-missing { background: var(--pink-bg); color: var(--pink); }
+.issue-title { font-size: 12px; font-weight: 600; line-height: 1.35; letter-spacing: -0.01em; }
+.issue-clause { font-size: 10px; color: var(--mid-gray); margin-bottom: 4px; letter-spacing: 0.03em; text-transform: uppercase; }
+.issue-desc { font-size: 12px; color: var(--dark-gray); line-height: 1.55; font-weight: 300; }
+.pe-btn { margin-top: 8px; font-size: 11px; color: var(--black); border: none; background: none; cursor: pointer; padding: 0; font-family: inherit; text-decoration: underline; text-underline-offset: 3px; letter-spacing: 0.01em; opacity: 0.6; }
+.pe-btn:hover { opacity: 1; }
+.pe-box { display: none; margin-top: 8px; background: var(--off-white); border-radius: 2px; padding: 9px 11px; font-size: 12px; color: var(--dark-gray); line-height: 1.55; border-left: 2px solid var(--black); font-weight: 300; }
+.pe-box.open { display: block; }
+
+.summary { padding: 10px 12px; border-top: 1px solid var(--border); background: var(--white); flex-shrink: 0; }
+.sum-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.sum-card { background: var(--off-white); border-radius: 2px; padding: 8px 10px; text-align: center; }
+.sum-num { font-size: 22px; font-weight: 300; letter-spacing: -0.03em; }
+.sum-num.red { color: var(--red); }
+.sum-num.amber { color: var(--amber); }
+.sum-num.pink { color: var(--pink); }
+.sum-label { font-size: 10px; color: var(--mid-gray); margin-top: 1px; letter-spacing: 0.04em; text-transform: uppercase; }
+
+.ask-area { padding: 12px 14px; border-top: 1px solid var(--border); background: var(--white); flex-shrink: 0; }
+.ask-eyebrow { font-size: 10px; color: var(--mid-gray); margin-bottom: 7px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; }
+.ask-row { display: flex; gap: 6px; }
+.ask-input { flex: 1; border: 1px solid var(--border); border-radius: 2px; padding: 7px 10px; font-size: 12px; font-family: inherit; background: var(--off-white); color: var(--black); letter-spacing: -0.01em; transition: border-color 0.15s; }
+.ask-input:focus { outline: none; border-color: var(--black); background: var(--white); }
+.ask-send { background: var(--black); color: var(--white); border: none; border-radius: 2px; padding: 7px 14px; cursor: pointer; font-size: 13px; font-family: inherit; transition: background 0.15s; }
+.ask-send:hover { background: var(--dark-gray); }
+.ask-response { display: none; margin-top: 8px; font-size: 12px; color: var(--dark-gray); background: var(--off-white); border-radius: 2px; padding: 9px 11px; line-height: 1.6; max-height: 110px; overflow-y: auto; font-weight: 300; border-left: 2px solid var(--black); }
+.ask-response.open { display: block; }
+
+.empty-panel { padding: 40px 16px; text-align: center; color: var(--mid-gray); font-size: 12px; line-height: 1.6; }
+.empty-panel strong { color: var(--black); display: block; margin-bottom: 4px; font-size: 13px; font-weight: 500; }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--light-gray); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--mid-gray); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">BDP<span>.</span></div>
+  <div class="logo-sep"></div>
+  <div class="app-title">Contract Analyser</div>
+  <button class="hbtn" onclick="openFile()">Open Document</button>
+  <button class="hbtn" id="change-contract-btn" onclick="renderLanding()" style="display:none">← Change Contract</button>
+  <button class="hbtn" id="add-revision-btn" onclick="addRevision()" style="display:none">+ Add Revision</button>
+  <button class="hbtn primary" id="analyse-btn" disabled onclick="runAnalysis()">Analyse Contract →</button>
+</div>
+
+<div class="progress-bar"><div class="progress-inner" id="progress"></div></div>
+
+<div class="revision-strip" id="revision-strip" style="display:none"></div>
+
+<div class="body">
+  <div class="left">
+    <div class="doc-bar">
+      <div class="doc-bar-dot" id="doc-dot"></div>
+      <span id="doc-header-name">No document loaded</span>
+    </div>
+    <div class="doc-area" id="doc-area"></div>
+    <div class="status-bar" id="status-bar">Ready</div>
+  </div>
+
+  <div class="resize-handle" id="resize-handle"></div>
+  <div class="right" id="right-panel">
+    <div class="panel-head">
+      <div class="panel-head-title">Review Panel</div>
+      <span class="score-pill" id="score-pill" style="display:none"></span>
+    </div>
+    <div class="tabs" id="tabs" style="display:none">
+      <div class="tab active" id="tab-issues" onclick="switchTab('issues')">Issues</div>
+      <div class="tab" id="tab-missing" onclick="switchTab('missing')">To Check</div>
+      <div class="tab" id="tab-changes" onclick="switchTab('changes')" style="display:none">Changes</div>
+    </div>
+    <div class="issues-scroll" id="issues-list">
+      <div class="empty-panel">
+        <strong>No analysis yet</strong>
+        Select a contract and click Analyse to begin clause review
+      </div>
+    </div>
+    <div class="summary" id="summary" style="display:none">
+      <div class="sum-grid">
+        <div class="sum-card"><div class="sum-num red" id="s-high">0</div><div class="sum-label">High risk</div></div>
+        <div class="sum-card"><div class="sum-num amber" id="s-med">0</div><div class="sum-label">Medium risk</div></div>
+        <div class="sum-card"><div class="sum-num pink" id="s-miss">0</div><div class="sum-label">To Check</div></div>
+      </div>
+    </div>
+    <div class="ask-area">
+      <div class="ask-eyebrow">Ask about this contract</div>
+      <div class="ask-row">
+        <input class="ask-input" id="ask-input" placeholder="e.g. Explain the payment terms" />
+        <button class="ask-send" onclick="askQuestion()">→</button>
+      </div>
+      <div class="ask-response" id="ask-resp"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
