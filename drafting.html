@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='5' fill='%230a0a0a'/><text x='50%25' y='72%25' font-family='Georgia,serif' font-weight='bold' font-size='18' fill='white' text-anchor='middle'>B.</text></svg>"/>
+<title>Contract Drafting — BDP</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --black: #0A0A0A;
+  --white: #FFFFFF;
+  --off-white: #F5F5F3;
+  --light-gray: #EBEBEB;
+  --mid-gray: #AAAAAA;
+  --dark-gray: #3A3A3A;
+  --border: #E0E0E0;
+  --red: #C8281E;
+  --red-bg: #FBF0EF;
+  --green: #1A6B3A;
+  --green-bg: #EBF5F0;
+  --blue: #1A4B8C;
+  --blue-bg: #EDF2FA;
+}
+
+html, body { height: 100%; }
+body {
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  background: var(--off-white);
+  color: var(--black);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  font-size: 13px;
+  letter-spacing: -0.01em;
+}
+
+/* HEADER */
+.header {
+  background: var(--black);
+  color: var(--white);
+  height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  flex-shrink: 0;
+  border-bottom: 1px solid #222;
+}
+.logo { font-size: 22px; font-weight: 600; letter-spacing: -0.04em; margin-right: 12px; flex-shrink: 0; }
+.logo-sep { width: 1px; height: 20px; background: #444; margin: 0 16px; flex-shrink: 0; }
+.app-title { font-size: 12px; font-weight: 400; color: #999; letter-spacing: 0.06em; text-transform: uppercase; flex: 1; }
+.nav-link {
+  font-size: 12px; color: #999; text-decoration: none; margin-left: 16px;
+  letter-spacing: 0.03em; transition: color 0.15s;
+}
+.nav-link:hover { color: #fff; }
+.nav-link.active { color: #fff; }
+
+/* MAIN LAYOUT */
+.main { display: flex; flex: 1; overflow: hidden; height: calc(100vh - 56px); }
+
+/* LEFT — DRAFTING PANEL */
+.left {
+  width: 420px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--white);
+  border-right: 1px solid var(--border);
+}
+.panel-head {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.panel-eyebrow { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mid-gray); margin-bottom: 4px; }
+.panel-title { font-size: 16px; font-weight: 500; letter-spacing: -0.02em; }
+
+/* CLAUSE TYPE SELECTOR */
+.clause-section { padding: 16px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.section-label { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--mid-gray); margin-bottom: 8px; font-weight: 500; }
+.clause-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.clause-btn {
+  padding: 8px 10px; border: 1px solid var(--border); border-radius: 2px;
+  background: var(--off-white); cursor: pointer; font-family: inherit;
+  font-size: 11px; text-align: left; transition: all 0.15s; color: var(--dark-gray);
+  font-weight: 500;
+}
+.clause-btn:hover { border-color: var(--black); background: var(--white); color: var(--black); }
+.clause-btn.active { border-color: var(--black); background: var(--black); color: var(--white); }
+
+/* REQUIREMENTS */
+.req-section { padding: 16px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.req-textarea {
+  width: 100%; min-height: 100px; border: 1px solid var(--border); border-radius: 2px;
+  padding: 10px 12px; font-size: 12px; font-family: inherit; line-height: 1.6;
+  color: var(--black); resize: none; background: var(--off-white);
+  transition: border-color 0.15s;
+}
+.req-textarea:focus { outline: none; border-color: var(--black); background: var(--white); }
+.req-textarea::placeholder { color: var(--mid-gray); }
+
+/* OPTIONS */
+.options-section { padding: 16px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.option-chip {
+  padding: 7px 10px; border: 1px solid var(--border); border-radius: 2px;
+  background: var(--off-white); cursor: pointer; font-family: inherit;
+  font-size: 11px; text-align: center; transition: all 0.15s; color: var(--dark-gray);
+  user-select: none;
+}
+.option-chip:hover { border-color: var(--black); }
+.option-chip.selected { border-color: var(--black); background: var(--white); color: var(--black); font-weight: 500; }
+
+/* DRAFT BUTTON */
+.draft-section { padding: 16px 20px; flex-shrink: 0; }
+.draft-btn {
+  width: 100%; background: var(--black); color: var(--white); border: none;
+  border-radius: 2px; padding: 12px; font-size: 13px; font-family: inherit;
+  font-weight: 500; cursor: pointer; transition: background 0.15s; letter-spacing: 0.02em;
+}
+.draft-btn:hover { background: var(--dark-gray); }
+.draft-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ITERATION */
+.iterate-section { padding: 12px 20px; flex: 1; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; }
+.iterate-label { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--mid-gray); font-weight: 500; flex-shrink: 0; }
+.iterate-chips { display: flex; flex-wrap: wrap; gap: 6px; flex-shrink: 0; }
+.iterate-chip {
+  padding: 5px 12px; border: 1px solid var(--border); border-radius: 99px;
+  background: var(--off-white); cursor: pointer; font-family: inherit;
+  font-size: 11px; transition: all 0.15s; color: var(--dark-gray);
+}
+.iterate-chip:hover { border-color: var(--black); color: var(--black); background: var(--white); }
+.custom-iterate { display: flex; gap: 6px; }
+.custom-iterate-input {
+  flex: 1; border: 1px solid var(--border); border-radius: 2px; padding: 6px 10px;
+  font-size: 12px; font-family: inherit; background: var(--off-white); color: var(--black);
+}
+.custom-iterate-input:focus { outline: none; border-color: var(--black); background: var(--white); }
+.custom-iterate-btn {
+  background: var(--black); color: var(--white); border: none; border-radius: 2px;
+  padding: 6px 14px; cursor: pointer; font-size: 12px; font-family: inherit;
+}
+.custom-iterate-btn:hover { background: var(--dark-gray); }
+
+/* RIGHT — OUTPUT */
+.right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--white);
+  min-width: 0;
+}
+.output-head {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  background: var(--white);
+}
+.output-title { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--black); }
+.output-actions { display: flex; gap: 8px; }
+.out-btn {
+  padding: 5px 12px; border: 1px solid var(--border); border-radius: 2px;
+  background: var(--off-white); cursor: pointer; font-size: 11px; font-family: inherit;
+  color: var(--dark-gray); transition: all 0.15s; letter-spacing: 0.02em;
+}
+.out-btn:hover { border-color: var(--black); color: var(--black); background: var(--white); }
+.out-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.output-area { flex: 1; overflow-y: auto; padding: 40px 56px; }
+
+/* EMPTY STATE */
+.empty-output {
+  display: flex; flex-direction: column; align-items: flex-start;
+  justify-content: center; height: 100%; gap: 14px;
+}
+.empty-eyebrow { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mid-gray); font-weight: 500; }
+.empty-output h2 { font-size: 28px; font-weight: 300; letter-spacing: -0.03em; line-height: 1.2; max-width: 440px; }
+.empty-output p { font-size: 13px; color: var(--dark-gray); font-weight: 300; line-height: 1.6; max-width: 380px; }
+
+/* CLAUSE OUTPUT */
+.clause-output { max-width: 680px; }
+.clause-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+.clause-type-badge {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 3px 10px; border-radius: 2px; background: var(--black); color: var(--white);
+}
+.clause-option-badge {
+  font-size: 10px; color: var(--mid-gray); letter-spacing: 0.04em; text-transform: uppercase;
+  padding: 3px 8px; border: 1px solid var(--border); border-radius: 2px;
+}
+.clause-text {
+  font-size: 14px; line-height: 2; color: var(--black); font-weight: 300;
+  border-left: 2px solid var(--black); padding-left: 20px; margin-bottom: 28px;
+  letter-spacing: 0.01em;
+}
+.clause-text strong { font-weight: 600; }
+
+.risk-check { margin-top: 24px; padding: 16px 20px; background: var(--green-bg); border-radius: 2px; border-left: 3px solid var(--green); }
+.risk-check-title { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--green); margin-bottom: 8px; }
+.risk-check-items { display: flex; flex-direction: column; gap: 5px; }
+.risk-check-item { font-size: 12px; color: var(--green); display: flex; gap: 8px; }
+
+.risk-warning { margin-top: 12px; padding: 14px 18px; background: var(--red-bg); border-radius: 2px; border-left: 3px solid var(--red); }
+.risk-warning-title { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--red); margin-bottom: 6px; }
+.risk-warning-text { font-size: 12px; color: var(--red); line-height: 1.5; }
+
+.history-divider { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+.history-label { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--mid-gray); margin-bottom: 16px; }
+.history-item { margin-bottom: 24px; opacity: 0.5; }
+.history-item .clause-text { border-left-color: var(--mid-gray); }
+
+/* LOADING */
+.loading-state { display: flex; flex-direction: column; gap: 16px; padding: 40px 0; max-width: 500px; }
+.loading-bar-wrap { display: flex; flex-direction: column; gap: 6px; }
+.loading-bar-label { font-size: 11px; color: var(--mid-gray); letter-spacing: 0.03em; }
+.loading-bar { height: 2px; background: var(--light-gray); border-radius: 1px; overflow: hidden; }
+.loading-bar-inner { height: 100%; background: var(--black); border-radius: 1px; width: 0%; transition: width 0.6s ease; }
+
+.status-bar { padding: 5px 24px; font-size: 11px; color: var(--mid-gray); background: var(--off-white); border-top: 1px solid var(--border); flex-shrink: 0; }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--light-gray); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--mid-gray); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">BDP<span>.</span></div>
+  <div class="logo-sep"></div>
+  <div class="app-title">Contract Drafting</div>
+  <a href="index.html" class="nav-link">← Contract Analyser</a>
+</div>
+
+<div class="main">
+
+  <!-- LEFT PANEL -->
+  <div class="left">
+    <div class="panel-head">
+      <div class="panel-eyebrow">BDP Legal</div>
+      <div class="panel-title">Draft a clause</div>
+    </div>
+
+    <!-- CLAUSE TYPE -->
+    <div class="clause-section">
+      <div class="section-label">Clause type</div>
+      <div class="clause-grid">
+        <button class="clause-btn active" onclick="selectClause(this, 'Liability Cap')">Liability Cap</button>
+        <button class="clause-btn" onclick="selectClause(this, 'Indemnity')">Indemnity</button>
+        <button class="clause-btn" onclick="selectClause(this, 'Standard of Care')">Standard of Care</button>
+        <button class="clause-btn" onclick="selectClause(this, 'IP / Copyright')">IP / Copyright</button>
+        <button class="clause-btn" onclick="selectClause(this, 'Termination')">Termination</button>
+        <button class="clause-btn" onclick="selectClause(this, 'Payment Terms')">Payment Terms</button>
+        <button class="clause-btn" onclick="selectClause(this, 'Assignment')">Assignment</button>
+        <button class="clause-btn" onclick="selectClause(this, 'Dispute Resolution')">Dispute Resolution</button>
+      </div>
+    </div>
+
+    <!-- REQUIREMENTS -->
+    <div class="req-section">
+      <div class="section-label">Specific requirements (optional)</div>
+      <textarea class="req-textarea" id="req-input" placeholder="e.g. Cap linked to PI insurance level, carve out for fraud, mutual obligation..."></textarea>
+    </div>
+
+    <!-- OPTIONS -->
+    <div class="options-section">
+      <div class="section-label">Options</div>
+      <div class="options-grid">
+        <div class="option-chip selected" onclick="toggleOption(this, 'BDP-friendly')" data-option="BDP-friendly">BDP-friendly</div>
+        <div class="option-chip" onclick="toggleOption(this, 'Mutual')" data-option="Mutual">Mutual</div>
+        <div class="option-chip" onclick="toggleOption(this, 'Strict')" data-option="Strict">Strict</div>
+        <div class="option-chip" onclick="toggleOption(this, 'Short form')" data-option="Short form">Short form</div>
+      </div>
+    </div>
+
+    <!-- DRAFT BUTTON -->
+    <div class="draft-section">
+      <button class="draft-btn" id="draft-btn" onclick="runDraft()">Draft Clause →</button>
+    </div>
+
+    <!-- ITERATE -->
+    <div class="iterate-section" id="iterate-section" style="display:none">
+      <div class="iterate-label">Refine this clause</div>
+      <div class="iterate-chips">
+        <div class="iterate-chip" onclick="iterate('Make it shorter')">Make it shorter</div>
+        <div class="iterate-chip" onclick="iterate('Make it mutual')">Make it mutual</div>
+        <div class="iterate-chip" onclick="iterate('Add a fraud carve-out')">Add fraud carve-out</div>
+        <div class="iterate-chip" onclick="iterate('Make it more protective for BDP')">More protective</div>
+        <div class="iterate-chip" onclick="iterate('Simplify the language')">Simplify language</div>
+        <div class="iterate-chip" onclick="iterate('Add a time limit')">Add time limit</div>
+      </div>
+      <div class="custom-iterate">
+        <input class="custom-iterate-input" id="custom-iterate" placeholder="Custom instruction…" />
+        <button class="custom-iterate-btn" onclick="customIterate()">→</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL — OUTPUT -->
+  <div class="right">
+    <div class="output-head">
+      <div class="output-title">Drafted Clause</div>
+      <div class="output-actions">
+        <button class="out-btn" id="copy-btn" onclick="copyClause()" disabled>Copy clause</button>
+        <button class="out-btn" id="reset-btn" onclick="resetDraft()" disabled>Start over</button>
+      </div>
+    </div>
+    <div class="output-area" id="output-area">
+      <div class="empty-output">
+        <div class="empty-eyebrow">BDP Contract Drafting</div>
+        <h2>Draft clauses that already meet BDP's standards.</h2>
+        <p>Select a clause type, add any specific requirements, and the drafter will generate wording that is pre-checked against BDP's legal risk framework — no indemnity overreach, correct standard of care, PI-linked liability cap.</p>
+      </div>
+    </div>
+    <div class="status-bar" id="status-bar">Ready</div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+
+let selectedClause = 'Liability Cap';
+let selectedOptions = ['BDP-friendly'];
+let currentClauseText = '';
+let clauseHistory = [];
+
+// ═══════════════════════════════════════════════════
+// PRE-DRAFTED CLAUSES — BDP risk-framework compliant
+// ═══════════════════════════════════════════════════
+
+const CLAUSES = {
+  'Liability Cap': {
+    default: `<strong>Limitation of Liability</strong>\n\nThe Architect's aggregate liability to the Client under or in connection with this Agreement, whether arising in contract, tort (including negligence), breach of statutory duty or otherwise, shall not exceed the amount of the professional indemnity insurance maintained by the Architect as notified to the Client from time to time.\n\nNothing in this clause shall limit or exclude the Architect's liability for death or personal injury caused by negligence, fraud or fraudulent misrepresentation, or any other liability that cannot be excluded by law.`,
+    mutual: `<strong>Mutual Limitation of Liability</strong>\n\nNeither party's aggregate liability to the other under or in connection with this Agreement, whether arising in contract, tort (including negligence), breach of statutory duty or otherwise, shall exceed the amount of the professional indemnity insurance maintained by the Architect as notified to the Client from time to time.\n\nNothing in this clause shall limit or exclude either party's liability for death or personal injury caused by negligence, fraud or fraudulent misrepresentation, or any other liability that cannot be excluded by law.`,
+    short: `<strong>Liability Cap</strong>\n\nThe Architect's total liability under this Agreement shall not exceed the level of professional indemnity insurance maintained by the Architect. This cap does not apply to liability for death, personal injury or fraud.`,
+    strict: `<strong>Limitation of Liability</strong>\n\nThe Architect's aggregate liability under this Agreement shall in no circumstances exceed the sum of the professional indemnity insurance maintained by the Architect from time to time. The Client acknowledges that this cap is a material term of this Agreement without which the Architect would not have entered into it.\n\nThe Architect shall not be liable for any indirect, consequential, special or punitive losses, loss of profit, loss of revenue or loss of opportunity, whether or not such losses were foreseeable at the date of this Agreement.\n\nNothing in this Agreement shall exclude or limit liability for death or personal injury caused by negligence, fraud, or any other liability that cannot lawfully be excluded.`
+  },
+  'Indemnity': {
+    default: `<strong>Indemnity</strong>\n\nThe Architect shall indemnify and hold harmless the Client from and against any losses, claims, damages, costs and expenses suffered or incurred by the Client to the extent that such losses, claims, damages, costs and expenses are directly caused by the Architect's negligence, breach of contract or wilful misconduct in the performance of the Services.\n\nThe Architect's obligation to indemnify shall not apply to the extent that any loss, claim, damage, cost or expense is caused or contributed to by the negligence or breach of duty of the Client or any third party.`,
+    mutual: `<strong>Mutual Indemnity</strong>\n\nEach party (the "Indemnifying Party") shall indemnify and hold harmless the other party (the "Indemnified Party") from and against losses, claims, damages, costs and expenses suffered or incurred by the Indemnified Party to the extent directly caused by the Indemnifying Party's negligence, breach of contract or wilful misconduct.\n\nNeither party's indemnity obligation shall apply to the extent that any loss is caused or contributed to by the Indemnified Party's own negligence or breach.`,
+    short: `<strong>Indemnity</strong>\n\nThe Architect shall indemnify the Client only to the extent that loss or damage is caused by the Architect's negligence, breach of contract or wilful misconduct. This indemnity does not cover losses caused or contributed to by the Client.`,
+    strict: `<strong>Indemnity</strong>\n\nThe Architect shall indemnify and hold harmless the Client against all proven direct losses, damages, costs and expenses arising from a breach of this Agreement by the Architect, negligence by the Architect, or wilful misconduct by the Architect, provided always that:\n\n(a) the indemnity shall be limited to direct losses only and shall not extend to indirect, consequential or special losses;\n(b) the indemnity shall not apply to the extent that the Client has caused or contributed to the relevant loss;\n(c) the Client has taken all reasonable steps to mitigate its loss.`
+  },
+  'Standard of Care': {
+    default: `<strong>Standard of Care</strong>\n\nThe Architect shall perform the Services with the reasonable skill, care and diligence expected of a competent architect experienced in projects of a similar nature, scale and complexity to the Project.\n\nThe Architect does not warrant that the Services or any part thereof will be fit for any particular purpose beyond that expressly stated in this Agreement.`,
+    mutual: `<strong>Standard of Performance</strong>\n\nThe Architect shall perform the Services with the reasonable skill, care and diligence expected of a competent architect experienced in projects of a similar nature, scale and complexity to the Project.\n\nThe Client shall perform its obligations under this Agreement with reasonable care and in a timely manner so as not to delay or disrupt the performance of the Services.\n\nNeither party warrants that performance of their respective obligations will achieve any particular outcome beyond that expressly stated in this Agreement.`,
+    short: `<strong>Standard of Care</strong>\n\nThe Architect shall exercise the reasonable skill and care expected of a competent architect. The Architect does not warrant fitness for purpose.`,
+    strict: `<strong>Standard of Care</strong>\n\nThe Architect shall at all times perform the Services:\n\n(a) with the reasonable skill, care and diligence expected of a properly qualified and competent architect with experience of undertaking projects of a similar nature, scale and complexity;\n(b) in accordance with all applicable laws and regulations in force at the time the relevant Services are performed;\n(c) in accordance with the standards and guidelines published by the Royal Institute of British Architects (RIBA) from time to time.\n\nFor the avoidance of doubt, the Architect's obligation is to exercise reasonable skill and care and does not extend to guaranteeing any particular outcome or warranting fitness for purpose.`
+  },
+  'IP / Copyright': {
+    default: `<strong>Intellectual Property and Copyright</strong>\n\nThe Architect retains ownership of the copyright and all other intellectual property rights in all documents, drawings, specifications and other materials prepared by the Architect in connection with the Services ("the Materials").\n\nThe Client is granted a non-exclusive licence to use and reproduce the Materials for purposes related to the Project including the construction, operation, maintenance, repair, reinstatement, alteration and sale of the Project. This licence does not extend to use of the Materials for any other project or development.\n\nThe Architect warrants, to the best of its knowledge and as far as it is aware, that the Materials do not infringe any third party intellectual property rights.`,
+    mutual: `<strong>Intellectual Property</strong>\n\nThe Architect retains ownership of all intellectual property rights in the Materials. The Client retains ownership of all intellectual property rights in any documents, data or information provided by the Client to the Architect ("Client Materials").\n\nThe Client grants the Architect a licence to use Client Materials for the purpose of performing the Services. The Architect grants the Client a licence to use the Materials for purposes related to the Project.\n\nEach party warrants, to the best of its knowledge, that materials it provides to the other do not infringe any third party intellectual property rights.`,
+    short: `<strong>IP / Copyright</strong>\n\nThe Architect owns copyright in all drawings and documents. The Client receives a licence to use them for the Project only. The Architect warrants, to the best of its knowledge, that the documents do not infringe third party IP rights.`,
+    strict: `<strong>Intellectual Property Rights</strong>\n\nAll intellectual property rights in the Materials vest in and remain the property of the Architect.\n\nSubject to payment of all sums due under this Agreement, the Architect grants to the Client a royalty-free, non-exclusive, non-transferable licence to use the Materials solely for the purposes of constructing, completing, operating, maintaining, repairing, reinstating and selling the Project. The Client may not use the Materials for any extension of the Project or any other project without the Architect's prior written consent and payment of an additional licence fee.\n\nThe Architect warrants, to the best of its knowledge and as far as it is aware, that the use of the Materials in accordance with this licence will not infringe any third party intellectual property rights. If the Architect becomes aware of any potential infringement, it shall notify the Client promptly.\n\nThe licence granted under this clause shall terminate automatically if the Client fails to pay any sum due under this Agreement and such failure continues for more than 30 days after written notice.`
+  },
+  'Termination': {
+    default: `<strong>Termination</strong>\n\nEither party may terminate this Agreement by giving not less than 28 days' written notice to the other party.\n\nUpon termination, the Client shall pay the Architect for all Services properly performed up to the date of termination, including any disbursements and expenses properly incurred, together with a reasonable sum in respect of work in progress at the date of termination.\n\nTermination shall not affect any accrued rights or remedies of either party.`,
+    mutual: `<strong>Termination</strong>\n\nEither party may terminate this Agreement:\n\n(a) by giving not less than 28 days' written notice to the other party; or\n(b) immediately upon written notice if the other party commits a material breach of this Agreement which is not remedied within 14 days of written notice requiring remedy; or\n(c) immediately if the other party becomes insolvent, enters administration or liquidation, or a receiver is appointed over any of its assets.\n\nUpon termination, the Client shall pay the Architect for all Services properly performed up to the date of termination, together with any reasonable demobilisation costs. The Client shall not be liable for loss of profit on any unperformed Services.`,
+    short: `<strong>Termination</strong>\n\nEither party may terminate on 28 days' written notice. On termination the Client shall pay all fees and expenses properly incurred to the termination date.`,
+    strict: `<strong>Termination</strong>\n\nThe Client may terminate this Agreement at any time by giving not less than 28 days' written notice to the Architect. Upon termination for convenience, the Client shall pay:\n\n(a) all fees in respect of Services properly performed to the date of termination;\n(b) all disbursements and expenses properly incurred and committed;\n(c) reasonable demobilisation costs;\n(d) a termination fee of 5% of the fees that would have been payable for the Services not yet performed.\n\nThe Architect may terminate this Agreement upon 14 days' written notice if the Client fails to pay any sum properly due and such failure continues for more than 30 days after written notice, or if the Client commits a material breach unremedied after 14 days' written notice.\n\nTermination shall not prejudice any accrued rights or claims of either party.`
+  },
+  'Payment Terms': {
+    default: `<strong>Payment</strong>\n\nThe Architect shall submit invoices monthly in arrears. Each invoice shall set out the Services performed in the relevant period and the fee due.\n\nThe Client shall pay each invoice within 30 days of the date of the invoice. If the Client disputes any element of an invoice, it shall notify the Architect in writing within 7 days of receipt, and the undisputed amount shall be paid by the due date.\n\nInterest shall accrue on any overdue amounts at the rate of 8% per annum above the Bank of England base rate from time to time, calculated daily from the due date until the date of actual payment.`,
+    mutual: `<strong>Payment Terms</strong>\n\nThe Architect shall submit invoices monthly in arrears. The Client shall pay each invoice within 30 days of the invoice date.\n\nIf the Client disputes any invoice, it shall give written notice within 7 days specifying the disputed amount and the reason. The Client shall pay the undisputed amount by the due date and the parties shall seek to resolve any dispute promptly.\n\nEach party shall bear its own costs in relation to any payment dispute unless the dispute is resolved through formal proceedings, in which case costs shall be at the discretion of the tribunal.`,
+    short: `<strong>Payment</strong>\n\nInvoices are submitted monthly. Payment is due within 30 days. Overdue payments accrue interest at 8% above Bank of England base rate.`,
+    strict: `<strong>Payment</strong>\n\nThe Architect shall submit invoices on the last Business Day of each calendar month. Each invoice shall constitute a valid payment notice for the purposes of the Housing Grants, Construction and Regeneration Act 1996 (as amended).\n\nThe Client shall pay each undisputed invoice within 30 days of the invoice date (the "Final Payment Date"). The Client shall issue a Payment Notice within 5 days of receipt of each invoice confirming the sum it intends to pay. If the Client intends to pay less than the invoiced amount it shall issue a Pay Less Notice not less than 7 days before the Final Payment Date.\n\nInterest shall accrue on any amount not paid by the Final Payment Date at the rate of 8% per annum above the Bank of England base rate, calculated on a daily basis.\n\nThe Architect may suspend performance of the Services upon not less than 7 days' written notice if any amount remains unpaid after the Final Payment Date.`
+  },
+  'Assignment': {
+    default: `<strong>Assignment</strong>\n\nNeither party may assign, transfer or novate this Agreement or any rights or obligations under it without the prior written consent of the other party, such consent not to be unreasonably withheld or delayed.\n\nThis Agreement may not be assigned on more than two occasions in total without the Architect's prior written consent. Any purported assignment in breach of this clause shall be void.`,
+    mutual: `<strong>Assignment</strong>\n\nNeither party may assign, transfer or novate this Agreement or any rights or obligations under it without the prior written consent of the other party.\n\nThis Agreement may be assigned a maximum of two times in aggregate. Any purported assignment beyond two occasions shall be void and of no effect without the Architect's express prior written consent.`,
+    short: `<strong>Assignment</strong>\n\nNeither party may assign this Agreement without the other's written consent. Assignment is limited to a maximum of two occasions.`,
+    strict: `<strong>Assignment and Novation</strong>\n\nThe Client shall not without the prior written consent of the Architect:\n\n(a) assign, charge or otherwise dispose of any of its rights under this Agreement;\n(b) sub-contract or delegate any of its obligations under this Agreement; or\n(c) novate this Agreement to any third party.\n\nThis Agreement may not be assigned more than twice in aggregate without the Architect's prior written consent (which may be withheld in the Architect's absolute discretion for any assignment beyond two occasions). Any purported assignment, novation or transfer in breach of this clause shall be void.\n\nThe Architect may assign the benefit of this Agreement to any affiliated entity without the Client's consent, provided that the Architect remains jointly and severally liable for performance of the Services.`
+  },
+  'Dispute Resolution': {
+    default: `<strong>Dispute Resolution</strong>\n\nIf any dispute arises between the parties in connection with this Agreement, the parties shall first attempt to resolve the dispute by negotiation between senior representatives of each party within 14 days of written notice of the dispute.\n\nIf the dispute is not resolved by negotiation, either party may refer the dispute to adjudication at any time in accordance with the Scheme for Construction Contracts (England and Wales) Regulations 1998. The adjudicator shall be appointed by the President of the Royal Institution of Chartered Surveyors (RICS).\n\nThis Agreement is governed by and construed in accordance with the law of England and Wales. The parties submit to the exclusive jurisdiction of the courts of England and Wales.`,
+    mutual: `<strong>Dispute Resolution</strong>\n\nThe parties shall attempt to resolve any dispute by negotiation in good faith. If unresolved within 14 days, either party may refer the dispute to adjudication. The adjudicator shall be appointed by the President of RICS.\n\nThe adjudicator's decision shall be binding on both parties pending final resolution by arbitration or litigation. This Agreement is governed by English law.`,
+    short: `<strong>Dispute Resolution</strong>\n\nDisputes shall be referred first to senior negotiation (14 days), then to adjudication. The adjudicator shall be appointed by the President of RICS. Governing law: England and Wales.`,
+    strict: `<strong>Dispute Resolution</strong>\n\n1. Negotiation: Any dispute shall first be referred to senior representatives of each party, who shall meet within 14 days of written notice and attempt to resolve the dispute in good faith.\n\n2. Adjudication: If the dispute is not resolved within 28 days of the notice of dispute, either party may at any time refer the dispute to adjudication under the Scheme for Construction Contracts (England and Wales) Regulations 1998 (as amended). The adjudicator shall be nominated by the President of the Royal Institution of Chartered Surveyors (RICS). The adjudicator's decision shall be binding on both parties pending final resolution.\n\n3. Arbitration: If the parties agree in writing, any dispute not resolved by adjudication may be referred to arbitration under the rules of the Chartered Institute of Arbitrators. The seat of arbitration shall be London, England.\n\n4. Governing Law: This Agreement is governed by and shall be construed in accordance with the law of England and Wales. Subject to the above, the parties submit to the exclusive jurisdiction of the courts of England and Wales.`
+  }
+};
+
+const RISK_CHECKS = {
+  'Liability Cap': ['No fitness for purpose language', 'Financial cap included', 'Death/injury carve-out present', 'PI insurance reference included'],
+  'Indemnity': ['Event-specific — limited to negligence/breach', 'No overarching indemnity language', 'Contributory negligence carve-out included', 'Within BDP risk framework'],
+  'Standard of Care': ['Reasonable skill and care standard only', 'Fitness for purpose expressly excluded', 'No guarantee of outcome', 'RIBA standard referenced'],
+  'IP / Copyright': ['BDP retains copyright', 'Knowledge qualifier on IP warranty', 'Licence limited to this Project only', 'Licence suspension for non-payment'],
+  'Termination': ['Fair compensation on termination', 'Mutual termination rights', 'Insolvency trigger included', 'Accrued rights preserved'],
+  'Payment Terms': ['30-day payment cycle', 'Interest on late payment included', 'Dispute mechanism included', 'Suspension right included'],
+  'Assignment': ['Two-occasion limit included', 'Consent required', 'Void clause for breach', 'Within BDP risk framework'],
+  'Dispute Resolution': ['Independent adjudicator (RICS)', 'Adjudication available at any time', 'English law governing', 'Seat of arbitration: England']
+};
+
+// ═══════════════════════════════════════════════════
+// UI INTERACTIONS
+// ═══════════════════════════════════════════════════
+
+function selectClause(btn, type) {
+  document.querySelectorAll('.clause-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedClause = type;
+}
+
+function toggleOption(chip, option) {
+  chip.classList.toggle('selected');
+  if (chip.classList.contains('selected')) {
+    if (!selectedOptions.includes(option)) selectedOptions.push(option);
+  } else {
+    selectedOptions = selectedOptions.filter(o => o !== option);
+  }
+}
+
+function setStatus(msg) {
+  document.getElementById('status-bar').textContent = msg;
+}
+
+// ═══════════════════════════════════════════════════
+// DRAFTING
+// ═══════════════════════════════════════════════════
+
+function getClauseVariant() {
+  if (selectedOptions.includes('Mutual')) return 'mutual';
+  if (selectedOptions.includes('Strict')) return 'strict';
+  if (selectedOptions.includes('Short form')) return 'short';
+  return 'default';
+}
+
+function runDraft() {
+  const btn = document.getElementById('draft-btn');
+  btn.disabled = true;
+  setStatus('Drafting clause against BDP risk framework…');
+
+  const output = document.getElementById('output-area');
+  const req = document.getElementById('req-input').value.trim();
+
+  // Show loading
+  output.innerHTML = `
+    <div class="loading-state">
+      <div class="loading-bar-wrap">
+        <div class="loading-bar-label">Selecting clause structure…</div>
+        <div class="loading-bar"><div class="loading-bar-inner" id="lb1"></div></div>
+      </div>
+      <div class="loading-bar-wrap">
+        <div class="loading-bar-label">Applying BDP risk framework…</div>
+        <div class="loading-bar"><div class="loading-bar-inner" id="lb2"></div></div>
+      </div>
+      <div class="loading-bar-wrap">
+        <div class="loading-bar-label">Checking against BDP standard positions…</div>
+        <div class="loading-bar"><div class="loading-bar-inner" id="lb3"></div></div>
+      </div>
+    </div>`;
+
+  setTimeout(() => document.getElementById('lb1').style.width = '100%', 100);
+  setTimeout(() => document.getElementById('lb2').style.width = '100%', 600);
+  setTimeout(() => document.getElementById('lb3').style.width = '100%', 1100);
+
+  setTimeout(() => {
+    const variant = getClauseVariant();
+    const clauses = CLAUSES[selectedClause];
+    let clauseText = clauses[variant] || clauses['default'];
+
+    // Store history
+    if (currentClauseText) {
+      clauseHistory.push({ text: currentClauseText, clause: selectedClause });
+    }
+    currentClauseText = clauseText;
+
+    renderClause(clauseText, req);
+    btn.disabled = false;
+    document.getElementById('iterate-section').style.display = 'flex';
+    document.getElementById('copy-btn').disabled = false;
+    document.getElementById('reset-btn').disabled = false;
+    setStatus('Clause drafted — ' + selectedClause + ' · ' + getVariantLabel(variant));
+  }, 1800);
+}
+
+function getVariantLabel(variant) {
+  const labels = { default: 'BDP-friendly', mutual: 'Mutual', strict: 'Strict', short: 'Short form' };
+  return labels[variant] || 'Standard';
+}
+
+function renderClause(text, req) {
+  const variant = getClauseVariant();
+  const checks = RISK_CHECKS[selectedClause] || [];
+  const optionBadges = selectedOptions.map(o => `<span class="clause-option-badge">${o}</span>`).join('');
+
+  // Format clause text — convert \n\n to paragraphs
+  const formatted = text.split('\n\n').map(p => `<p style="margin-bottom:14px">${p.replace(/\n/g, '<br>')}</p>`).join('');
+
+  // Requirement note if provided
+  const reqNote = req ? `<div style="margin-top:16px;padding:12px 16px;background:var(--blue-bg);border-radius:2px;border-left:2px solid var(--blue);font-size:12px;color:var(--blue)"><strong style="font-size:10px;letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:4px">Requirement noted</strong>${req}</div>` : '';
+
+  // History
+  const historyHtml = clauseHistory.length > 0 ? `
+    <hr class="history-divider">
+    <div class="history-label">Previous versions</div>
+    ${clauseHistory.slice().reverse().map(h => `
+      <div class="history-item">
+        <div class="clause-meta"><span class="clause-type-badge">${h.clause}</span></div>
+        <div class="clause-text">${h.text.split('\n\n').map(p => `<p style="margin-bottom:10px">${p.replace(/\n/g,'<br>')}</p>`).join('')}</div>
+      </div>`).join('')}
+  ` : '';
+
+  document.getElementById('output-area').innerHTML = `
+    <div class="clause-output">
+      <div class="clause-meta">
+        <span class="clause-type-badge">${selectedClause}</span>
+        ${optionBadges}
+      </div>
+      <div class="clause-text">${formatted}</div>
+      ${reqNote}
+      <div class="risk-check">
+        <div class="risk-check-title">✓ BDP Risk Framework — Passed</div>
+        <div class="risk-check-items">
+          ${checks.map(c => `<div class="risk-check-item"><span>✓</span><span>${c}</span></div>`).join('')}
+        </div>
+      </div>
+    </div>
+    ${historyHtml}`;
+}
+
+// ═══════════════════════════════════════════════════
+// ITERATION
+// ═══════════════════════════════════════════════════
+
+function iterate(instruction) {
+  applyIteration(instruction);
+}
+
+function customIterate() {
+  const val = document.getElementById('custom-iterate').value.trim();
+  if (!val) return;
+  applyIteration(val);
+  document.getElementById('custom-iterate').value = '';
+}
+
+document.getElementById('custom-iterate').addEventListener('keydown', e => {
+  if (e.key === 'Enter') customIterate();
+});
+
+function applyIteration(instruction) {
+  setStatus('Applying: ' + instruction + '…');
+
+  // Map instructions to variants or modifications
+  const instructionLower = instruction.toLowerCase();
+
+  if (clauseHistory.length === 0 && currentClauseText) {
+    clauseHistory.push({ text: currentClauseText, clause: selectedClause });
+  }
+
+  let newVariant = getClauseVariant();
+
+  if (instructionLower.includes('shorter') || instructionLower.includes('short')) {
+    newVariant = 'short';
+  } else if (instructionLower.includes('mutual')) {
+    newVariant = 'mutual';
+    // Toggle mutual option
+    document.querySelectorAll('.option-chip').forEach(c => {
+      if (c.dataset.option === 'Mutual') c.classList.add('selected');
+    });
+    if (!selectedOptions.includes('Mutual')) selectedOptions.push('Mutual');
+  } else if (instructionLower.includes('strict') || instructionLower.includes('protective')) {
+    newVariant = 'strict';
+  }
+
+  const clauses = CLAUSES[selectedClause];
+  let clauseText = clauses[newVariant] || clauses['default'];
+
+  // Handle specific additions
+  if (instructionLower.includes('fraud carve') || instructionLower.includes('fraud')) {
+    if (!clauseText.includes('fraud')) {
+      clauseText += '\n\nNothing in this Agreement shall exclude or limit liability for fraud or fraudulent misrepresentation.';
+    }
+  }
+  if (instructionLower.includes('time limit')) {
+    if (!clauseText.includes('years') && !clauseText.includes('limitation period')) {
+      clauseText += '\n\nNo action or proceedings in respect of any breach of this Agreement may be brought after the expiry of 6 years from the date on which the breach occurred or (in the case of latent defects) from the date on which the breach was or ought reasonably to have been discovered.';
+    }
+  }
+
+  currentClauseText = clauseText;
+  setTimeout(() => {
+    renderClause(clauseText, '');
+    setStatus('Updated — ' + instruction);
+  }, 600);
+}
+
+// ═══════════════════════════════════════════════════
+// UTILITY
+// ═══════════════════════════════════════════════════
+
+function copyClause() {
+  // Strip HTML tags for plain text copy
+  const tmp = document.createElement('div');
+  tmp.innerHTML = currentClauseText.replace(/<strong>/g,'').replace(/<\/strong>/g,'').replace(/<br>/g,'\n').replace(/<[^>]+>/g,'');
+  const plain = currentClauseText
+    .replace(/<strong>/g,'').replace(/<\/strong>/g,'')
+    .replace(/<br>/g,'\n').replace(/<[^>]+>/g,'')
+    .replace(/\n\n/g,'\n\n');
+  navigator.clipboard.writeText(plain).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy clause', 2000);
+  });
+}
+
+function resetDraft() {
+  currentClauseText = '';
+  clauseHistory = [];
+  document.getElementById('output-area').innerHTML = `
+    <div class="empty-output">
+      <div class="empty-eyebrow">BDP Contract Drafting</div>
+      <h2>Draft clauses that already meet BDP's standards.</h2>
+      <p>Select a clause type, add any specific requirements, and the drafter will generate wording that is pre-checked against BDP's legal risk framework.</p>
+    </div>`;
+  document.getElementById('iterate-section').style.display = 'none';
+  document.getElementById('copy-btn').disabled = true;
+  document.getElementById('reset-btn').disabled = true;
+  document.getElementById('req-input').value = '';
+  setStatus('Ready');
+}
+</script>
+</body>
+</html>
