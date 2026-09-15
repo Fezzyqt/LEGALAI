@@ -335,7 +335,7 @@ function renderLanding() {
 // AI PROXY CONFIG — update this to your domain
 // ═══════════════════════════════════════════════════════════
 
-const AI_PROXY_URL = 'http://2.124.182.3:3456/analyse'; // ← change this to your domain
+const AI_PROXY_URL = 'https://monetary-insulation-flood-relationship.trycloudflare.com'; // ← change this to your domain
 
 // ═══════════════════════════════════════════════════════════
 // FILE READING — supports PDF, DOCX, TXT
