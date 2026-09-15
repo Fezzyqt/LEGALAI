@@ -77,11 +77,72 @@ body {
   white-space: nowrap; margin-left: 8px;
 }
 .hbtn:hover { background: #1a1a1a; border-color: #666; color: #fff; }
-.hbtn.primary { background: var(--white); border-color: var(--white); color: var(--black); font-weight: 500; }
-.hbtn.primary:hover { background: #ddd; border-color: #ddd; }
-.hbtn:disabled { opacity: 0.3; cursor: not-allowed; }
+.hbtn.primary {
+  background: var(--white); border-color: var(--white); color: var(--black);
+  font-weight: 600; font-size: 13px; padding: 9px 22px; border-radius: 3px;
+  letter-spacing: 0.03em; box-shadow: 0 1px 8px rgba(255,255,255,0.15);
+}
+.hbtn.primary:hover { background: #e8e8e8; border-color: #e8e8e8; box-shadow: 0 2px 12px rgba(255,255,255,0.25); }
+.hbtn:disabled { opacity: 0.3; cursor: not-allowed; box-shadow: none; }
 
+/* ── CHROME-STYLE TAB STRIP ── */
+.tab-strip {
+  display: none; align-items: center; background: #1a1a1a;
+  border-bottom: 1px solid var(--border); padding: 0 16px; gap: 2px;
+  flex-shrink: 0; height: 38px;
+}
+.tab-strip.visible { display: flex; }
+.doc-tab {
+  display: flex; align-items: center; gap: 8px; padding: 0 12px;
+  height: 30px; background: var(--white); border-radius: 6px 6px 0 0;
+  font-size: 12px; color: var(--dark-gray); cursor: pointer;
+  border: 1px solid var(--border); border-bottom: none;
+  max-width: 200px; position: relative; top: 1px;
+  transition: background 0.15s;
+}
+.doc-tab:hover { background: #f0f0f0; }
+.doc-tab.active { background: var(--white); color: var(--black); font-weight: 500; }
+.doc-tab-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px; }
+.doc-tab-close {
+  width: 16px; height: 16px; border-radius: 50%; border: none;
+  background: transparent; color: var(--mid-gray); cursor: pointer;
+  font-size: 12px; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; line-height: 1;
+}
+.doc-tab-close:hover { background: var(--light-gray); color: var(--black); }
+.tab-add-btn {
+  width: 28px; height: 28px; border-radius: 50%; border: none;
+  background: transparent; color: #888; cursor: pointer;
+  font-size: 18px; display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s; margin-left: 4px; flex-shrink: 0;
+}
+.tab-add-btn:hover { background: #333; color: #fff; }
+.tab-open-btn {
+  font-size: 11px; color: #888; border: 1px solid #444; background: transparent;
+  border-radius: 3px; padding: 4px 10px; cursor: pointer; font-family: inherit;
+  margin-left: 8px; transition: all 0.15s; letter-spacing: 0.02em;
+}
+.tab-open-btn:hover { background: #333; color: #fff; border-color: #666; }
 
+/* ── DEMO MODAL ── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  z-index: 1000; align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--white); border-radius: 4px; padding: 32px;
+  max-width: 380px; width: 90%; text-align: center; box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+}
+.modal-icon { font-size: 32px; margin-bottom: 12px; }
+.modal-title { font-size: 16px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 8px; }
+.modal-text { font-size: 13px; color: var(--dark-gray); line-height: 1.6; margin-bottom: 24px; font-weight: 300; }
+.modal-close {
+  background: var(--black); color: var(--white); border: none; border-radius: 2px;
+  padding: 10px 28px; font-size: 13px; font-family: inherit; cursor: pointer;
+  font-weight: 500; letter-spacing: 0.02em;
+}
+.modal-close:hover { background: var(--dark-gray); }
 
 /* ── PROGRESS ── */
 .progress-bar { height: 2px; background: #222; flex-shrink: 0; }
@@ -220,7 +281,24 @@ mark.active-mark { outline: 2px solid var(--black); outline-offset: 2px; }
 
 <div class="progress-bar"><div class="progress-inner" id="progress"></div></div>
 
-<div class="revision-strip" id="revision-strip" style="display:none"></div>
+<!-- Chrome-style tab strip -->
+<div class="tab-strip" id="tab-strip">
+  <div id="doc-tabs"></div>
+  <button class="tab-add-btn" onclick="showDemoModal()" title="Add revision">+</button>
+  <button class="tab-open-btn" onclick="showDemoModal()">Open Document</button>
+</div>
+
+<!-- Demo feature modal -->
+<div class="modal-overlay" id="demo-modal" onclick="closeDemoModal(event)">
+  <div class="modal">
+    <div class="modal-icon">🔒</div>
+    <div class="modal-title">Demo Version</div>
+    <div class="modal-text">This feature is not available in the demo. The full version of BDP Contract Analyser supports uploading your own contracts and adding revisions for comparison.</div>
+    <button class="modal-close" onclick="closeDemoModal()">Got it</button>
+  </div>
+</div>
+
+
 
 <div class="body">
   <div class="left">
