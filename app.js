@@ -299,13 +299,11 @@ function renderLanding() {
   revisions = []; nextRevisionId = 1; results = null; changes = null;
   activeRevisionIndex = 0; activeContractId = null;
   document.getElementById('revision-strip').style.display = 'none';
-  document.getElementById('add-revision-btn').style.display = 'none';
   document.getElementById('analyse-btn').disabled = true;
   document.getElementById('analyse-btn').textContent = 'Analyse Contract →';
   document.getElementById('tabs').style.display = 'none';
   document.getElementById('summary').style.display = 'none';
   document.getElementById('score-pill').style.display = 'none';
-  document.getElementById('change-contract-btn').style.display = 'none';
   document.getElementById('doc-dot').style.background = 'var(--mid-gray)';
   document.getElementById('doc-header-name').textContent = 'No document loaded';
   document.getElementById('issues-list').innerHTML = '<div class="empty-panel"><strong>No analysis yet</strong>Select a contract and click Analyse to begin clause review</div>';
@@ -335,7 +333,7 @@ function renderLanding() {
 // AI PROXY CONFIG — update this to your domain
 // ═══════════════════════════════════════════════════════════
 
-const AI_PROXY_URL = 'https://monetary-insulation-flood-relationship.trycloudflare.com/analyse'; // ← change this to your domain
+const AI_PROXY_URL = 'https://ai.yourdomain.com/analyse'; // ← change this to your domain
 
 // ═══════════════════════════════════════════════════════════
 // FILE READING — supports PDF, DOCX, TXT
@@ -359,33 +357,9 @@ async function readFileAsBase64(f) {
   });
 }
 
-function openFile() {
-  const inp = document.createElement('input');
-  inp.type = 'file'; inp.accept = '.txt,.docx,.pdf';
-  inp.onchange = async e => {
-    const f = e.target.files[0];
-    if (!f) return;
-    // Store raw file for AI analysis — also extract text for display
-    let text = '';
-    try {
-      if (f.name.toLowerCase().endsWith('.pdf')) {
-        text = '[PDF — will be analysed by BDP Legal AI]';
-      } else {
-        text = await readFileText(f);
-      }
-    } catch(err) {
-      text = '[File loaded — will be analysed by BDP Legal AI]';
-    }
-    activeContractId = null;
-    revisions = [{ id: nextRevisionId++, label: 'Original', name: f.name, text, rawFile: f, contractId: null }];
-    results = null; changes = null; activeRevisionIndex = 0;
-    renderRevisionStrip();
-    setDoc(revisions[0]);
-    document.getElementById('add-revision-btn').style.display = 'inline-block';
-    document.getElementById('change-contract-btn').style.display = 'inline-block';
-  };
-  inp.click();
-}
+// openFile and addRevision removed for demo version
+
+
 
 function loadContract(id) {
   const c = CONTRACTS.find(x => x.id === id);
@@ -396,8 +370,6 @@ function loadContract(id) {
   results = null; changes = null; activeRevisionIndex = 0;
   renderRevisionStrip();
   setDoc(revisions[0]);
-  document.getElementById('add-revision-btn').style.display = 'inline-block';
-  document.getElementById('change-contract-btn').style.display = 'inline-block';
 }
 
 function setDoc(rev) {
@@ -427,29 +399,9 @@ function renderDoc(text) {
 // REVISIONS
 // ═══════════════════════════════════════════════════════════
 
-function addRevision() {
-  const inp = document.createElement('input');
-  inp.type = 'file'; inp.accept = '.txt,.docx,.pdf';
-  inp.onchange = async e => {
-    const f = e.target.files[0];
-    if (!f) return;
-    let text = '';
-    try {
-      if (f.name.toLowerCase().endsWith('.pdf')) {
-        text = '[PDF — will be analysed by BDP Legal AI]';
-      } else {
-        text = await readFileText(f);
-      }
-    } catch(err) {
-      text = '[File loaded — will be analysed by BDP Legal AI]';
-    }
-    const label = 'Revision ' + revisions.length;
-    revisions.push({ id: nextRevisionId++, label, name: f.name, text, rawFile: f, contractId: null });
-    renderRevisionStrip();
-    selectRevisionTab(revisions.length - 1);
-  };
-  inp.click();
-}
+// addRevision removed for demo version
+
+
 
 function removeRevision(id) {
   revisions = revisions.filter(r => r.id !== id);
@@ -538,23 +490,80 @@ function runAnalysis() {
 
 async function runAIAnalysis(rev, onRevision) {
   const steps = [
-    ['Extracting document text…', 10],
-    ['Sending to BDP Legal AI…', 25],
-    ['Reading contract structure…', 40],
-    ['Applying BDP risk framework…', 58],
-    ['Checking indemnity clauses…', 72],
-    ['Flagging missing provisions…', 86],
-    ['Generating report…', 94]
+    'Extracting document text…',
+    'Sending to BDP Legal AI…',
+    'Reading contract structure…',
+    'Applying BDP risk framework…',
+    'Checking indemnity and liability clauses…',
+    'Checking fitness for purpose and LDs…',
+    'Flagging missing provisions…',
+    'Generating report…'
   ];
+
   let stepIdx = 0;
-  setStatus(steps[0][0], steps[0][1]);
+
+  function renderLoading(step) {
+    const pct = Math.round(((stepIdx) / (steps.length - 1)) * 100);
+    document.getElementById('doc-area').innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:32px;padding:40px;text-align:center;">
+        
+        <!-- Spinning ring -->
+        <div style="position:relative;width:80px;height:80px;">
+          <svg viewBox="0 0 80 80" style="width:80px;height:80px;animation:spin 1.4s linear infinite;">
+            <circle cx="40" cy="40" r="34" fill="none" stroke="var(--light-gray)" stroke-width="5"/>
+            <circle cx="40" cy="40" r="34" fill="none" stroke="var(--black)" stroke-width="5"
+              stroke-dasharray="60 154" stroke-linecap="round"/>
+          </svg>
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:13px;font-weight:600;letter-spacing:-0.02em;">
+            ${pct}%
+          </div>
+        </div>
+
+        <!-- Title -->
+        <div>
+          <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--mid-gray);margin-bottom:8px;font-weight:500;">BDP Legal AI</div>
+          <div style="font-size:20px;font-weight:300;letter-spacing:-0.02em;margin-bottom:6px;">Analysing contract…</div>
+          <div style="font-size:13px;color:var(--mid-gray);font-weight:300;">This may take 30–90 seconds</div>
+        </div>
+
+        <!-- Progress bar -->
+        <div style="width:100%;max-width:360px;">
+          <div style="height:2px;background:var(--light-gray);border-radius:1px;overflow:hidden;margin-bottom:12px;">
+            <div style="height:100%;background:var(--black);border-radius:1px;width:${pct}%;transition:width 0.8s ease;"></div>
+          </div>
+          <!-- Steps list -->
+          <div style="display:flex;flex-direction:column;gap:6px;text-align:left;">
+            ${steps.map((s, i) => `
+              <div style="display:flex;align-items:center;gap:10px;font-size:12px;
+                color:${i < stepIdx ? 'var(--green)' : i === stepIdx ? 'var(--black)' : 'var(--mid-gray)'};
+                font-weight:${i === stepIdx ? '500' : '300'};">
+                <span style="flex-shrink:0;font-size:11px;">
+                  ${i < stepIdx ? '✓' : i === stepIdx ? '→' : '·'}
+                </span>
+                ${s}
+              </div>`).join('')}
+          </div>
+        </div>
+
+        <div style="font-size:11px;color:var(--mid-gray);letter-spacing:0.03em;">
+          Reviewing against BDP's internal risk framework
+        </div>
+      </div>
+      <style>
+        @keyframes spin { to { transform: rotate(360deg); } }
+      </style>`;
+  }
+
+  renderLoading(steps[0]);
+  setStatus('Analysing with BDP Legal AI — please wait…', 5);
+
   const iv = setInterval(() => {
-    stepIdx++;
-    if (stepIdx < steps.length - 1) setStatus(steps[stepIdx][0], steps[stepIdx][1]);
-  }, 3000);
+    stepIdx = Math.min(stepIdx + 1, steps.length - 1);
+    renderLoading(steps[stepIdx]);
+    setStatus(steps[stepIdx], Math.round((stepIdx / (steps.length - 1)) * 94));
+  }, 8000);
 
   try {
-    // Convert file to base64
     const base64 = await readFileAsBase64(rev.rawFile);
 
     const response = await fetch(AI_PROXY_URL, {
@@ -613,30 +622,79 @@ async function runAIAnalysis(rev, onRevision) {
 
 function runDemoAnalysis(contractId, onRevision) {
   const steps = [
-    ['Reading document structure…', 12],
-    ['Applying BDP risk framework…', 30],
-    ['Checking indemnity and liability clauses…', 50],
-    ['Flagging fitness for purpose and LDs…', 72],
-    ['Generating report…', 92]
+    'Extracting document text…',
+    'Sending to BDP Legal AI…',
+    'Reading contract structure…',
+    'Applying BDP risk framework…',
+    'Checking indemnity and liability clauses…',
+    'Checking fitness for purpose and LDs…',
+    'Flagging missing provisions…',
+    'Generating report…'
   ];
-  let i = 0;
-  setStatus(steps[0][0], steps[0][1]);
+
+  let stepIdx = 0;
+
+  function renderDemoLoading() {
+    const pct = Math.round((stepIdx / (steps.length - 1)) * 100);
+    document.getElementById('doc-area').innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:32px;padding:40px;text-align:center;">
+        <div style="position:relative;width:80px;height:80px;">
+          <svg viewBox="0 0 80 80" style="width:80px;height:80px;animation:spin 1.4s linear infinite;">
+            <circle cx="40" cy="40" r="34" fill="none" stroke="var(--light-gray)" stroke-width="5"/>
+            <circle cx="40" cy="40" r="34" fill="none" stroke="var(--black)" stroke-width="5"
+              stroke-dasharray="60 154" stroke-linecap="round"/>
+          </svg>
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:13px;font-weight:600;letter-spacing:-0.02em;">${pct}%</div>
+        </div>
+        <div>
+          <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--mid-gray);margin-bottom:8px;font-weight:500;">BDP Legal AI</div>
+          <div style="font-size:20px;font-weight:300;letter-spacing:-0.02em;margin-bottom:6px;">Analysing contract…</div>
+          <div style="font-size:13px;color:var(--mid-gray);font-weight:300;">Reviewing against BDP's risk framework</div>
+        </div>
+        <div style="width:100%;max-width:360px;">
+          <div style="height:2px;background:var(--light-gray);border-radius:1px;overflow:hidden;margin-bottom:12px;">
+            <div style="height:100%;background:var(--black);border-radius:1px;width:${pct}%;transition:width 0.8s ease;"></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;text-align:left;">
+            ${steps.map((s, i) => `
+              <div style="display:flex;align-items:center;gap:10px;font-size:12px;
+                color:${i < stepIdx ? 'var(--green)' : i === stepIdx ? 'var(--black)' : 'var(--mid-gray)'};
+                font-weight:${i === stepIdx ? '500' : '300'};">
+                <span style="flex-shrink:0;font-size:11px;">${i < stepIdx ? '✓' : i === stepIdx ? '→' : '·'}</span>
+                ${s}
+              </div>`).join('')}
+          </div>
+        </div>
+      </div>
+      <style>@keyframes spin { to { transform: rotate(360deg); } }</style>`;
+  }
+
+  renderDemoLoading();
+  setStatus('Analysing with BDP Legal AI…', 5);
+
   const iv = setInterval(() => {
-    i++;
-    if (i < steps.length) {
-      setStatus(steps[i][0], steps[i][1]);
-    } else {
-      clearInterval(iv);
-      setTimeout(() => {
-        const c = CONTRACTS.find(x => x.id === contractId);
-        results = c ? c.results : CONTRACTS[0].results;
-        setStatus('Analysis complete — ' + results.issues.length + ' issues · ' + results.missing.length + ' items to check', 100);
-        setTimeout(() => document.getElementById('progress').style.width = '0%', 1800);
-        renderResults(onRevision);
-        document.getElementById('analyse-btn').disabled = false;
-      }, 500);
-    }
-  }, 750);
+    stepIdx = Math.min(stepIdx + 1, steps.length - 1);
+    renderDemoLoading();
+    setStatus(steps[stepIdx], Math.round((stepIdx / (steps.length - 1)) * 94));
+  }, 600);
+
+  setTimeout(() => {
+    clearInterval(iv);
+    stepIdx = steps.length - 1;
+    renderDemoLoading();
+
+    setTimeout(() => {
+      const c = CONTRACTS.find(x => x.id === contractId);
+      results = c ? c.results : CONTRACTS[0].results;
+      // Restore the contract text
+      const rev = revisions[activeRevisionIndex];
+      if (rev) renderDoc(rev.text || '');
+      setStatus('Analysis complete — ' + results.issues.length + ' issues · ' + results.missing.length + ' items to check', 100);
+      setTimeout(() => document.getElementById('progress').style.width = '0%', 1800);
+      renderResults(onRevision);
+      document.getElementById('analyse-btn').disabled = false;
+    }, 500);
+  }, 5200);
 }
 
 function renderResults(onRevision) {

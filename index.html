@@ -202,9 +202,7 @@ mark.active-mark { outline: 2px solid var(--black); outline-offset: 2px; }
   <div class="logo-sep"></div>
   <div class="app-title">Contract Analyser</div>
   <a href="drafting.html" style="font-size:12px;color:#999;text-decoration:none;margin-left:16px;letter-spacing:0.03em;transition:color 0.15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#999'">Contract Drafting →</a>
-  <button class="hbtn" onclick="openFile()">Open Document</button>
-  <button class="hbtn" id="change-contract-btn" onclick="renderLanding()" style="display:none">← Change Contract</button>
-  <button class="hbtn" id="add-revision-btn" onclick="addRevision()" style="display:none">+ Add Revision</button>
+  <span style="font-size:12px;color:#555;margin-left:16px;cursor:pointer;" onclick="renderLanding()">← Contracts</span>
   <button class="hbtn primary" id="analyse-btn" disabled onclick="runAnalysis()">Analyse Contract →</button>
 </div>
 
@@ -255,6 +253,10 @@ mark.active-mark { outline: 2px solid var(--black); outline-offset: 2px; }
       <div class="ask-response" id="ask-resp"></div>
     </div>
   </div>
+</div>
+
+<div style="text-align:center;padding:10px 24px;font-size:11px;color:var(--mid-gray);border-top:1px solid var(--border);background:var(--white);flex-shrink:0;letter-spacing:0.02em;">
+  © 2026 BDP Architects LLP. All rights reserved. This tool and its underlying risk framework are proprietary to BDP Architects LLP. Unauthorised use or reproduction is prohibited.
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
