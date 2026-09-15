@@ -298,7 +298,9 @@ function closeApp() { if (confirm('Exit Contract Analyser?')) { window.location.
 function renderLanding() {
   revisions = []; nextRevisionId = 1; results = null; changes = null;
   activeRevisionIndex = 0; activeContractId = null;
-  document.getElementById('revision-strip').style.display = 'none';
+
+  const tabStrip = document.getElementById('tab-strip');
+  if (tabStrip) tabStrip.classList.remove('visible');
   document.getElementById('analyse-btn').disabled = true;
   document.getElementById('analyse-btn').textContent = 'Analyse Contract →';
   document.getElementById('tabs').style.display = 'none';
@@ -309,20 +311,20 @@ function renderLanding() {
   document.getElementById('issues-list').innerHTML = '<div class="empty-panel"><strong>No analysis yet</strong>Select a contract and click Analyse to begin clause review</div>';
   setStatus('Ready');
 
-  document.getElementById('doc-area').innerHTML = `
-    <div class="empty-doc">
-      <div class="empty-eyebrow">BDP Contract Analyser</div>
-      <h2>Built Original.<br>Built Protected.</h2>
-      <p>Select a sample contract to analyse against BDP's legal risk framework, or open your own document.</p>
-      <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px;max-width:420px;">
-        ${CONTRACTS.map(c => `
-          <button class="contract-pick-btn" onclick="loadContract('${c.id}')">
-            <span class="contract-pick-label">${c.label}</span>
-            <span class="contract-pick-sub">${c.filename}</span>
-          </button>
-        `).join('')}
-      </div>
-    </div>`;
+  // Populate contract list
+  const contractList = document.getElementById('contract-list');
+  if (contractList) {
+    contractList.innerHTML = CONTRACTS.map(c => `
+      <button class="contract-pick-btn" onclick="loadContract('${c.id}')">
+        <span class="contract-pick-label">${c.label}</span>
+        <span class="contract-pick-sub">${c.filename}</span>
+      </button>
+    `).join('');
+  }
+
+  // Show landing, hide contract text
+  const landing = document.getElementById('landing-content');
+  if (landing) landing.style.display = 'flex';
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -388,11 +390,12 @@ function setDoc(rev) {
 
 function renderDoc(text) {
   const paras = text.split('\n').filter(l => l.trim());
-  document.getElementById('doc-area').innerHTML = paras.map(p => {
+  const html = paras.map(p => {
     const t = p.trim();
     if (t === t.toUpperCase() && t.length < 80 && /[A-Z]/.test(t)) return `<h3>${escapeHtml(t)}</h3>`;
     return `<p>${escapeHtml(t)}</p>`;
   }).join('');
+  document.getElementById('doc-area').innerHTML = html;
 }
 
 // ═══════════════════════════════════════════════════════════

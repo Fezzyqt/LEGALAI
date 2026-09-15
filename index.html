@@ -34,18 +34,18 @@
   --diff-del-text: #B0241A;
 }
 
-html, body { height: 100%; }
+html, body { height: 100%; margin: 0; }
 body {
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
   background: var(--off-white);
   color: var(--black);
   display: flex;
   flex-direction: column;
+  height: 100vh;
   overflow: hidden;
   font-size: 13px;
   letter-spacing: -0.01em;
 }
-
 /* ── HEADER ── */
 .header {
   background: var(--black);
@@ -171,7 +171,7 @@ body {
 .diff-legend-swatch { width: 9px; height: 9px; border-radius: 2px; }
 
 /* ── BODY ── */
-.body { display: flex; flex: 1; overflow: hidden; }
+.body { display: flex; flex: 1; overflow: hidden; min-height: 0; }
 .left { flex: 1; display: flex; flex-direction: column; background: var(--white); border-right: 1px solid var(--border); min-width: 0; }
 .doc-bar { padding: 10px 24px; border-bottom: 1px solid var(--border); font-size: 11px; color: var(--mid-gray); letter-spacing: 0.04em; text-transform: uppercase; display: flex; align-items: center; gap: 8px; background: var(--white); flex-shrink: 0; }
 .doc-bar-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--mid-gray); flex-shrink: 0; }
@@ -306,7 +306,16 @@ mark.active-mark { outline: 2px solid var(--black); outline-offset: 2px; }
       <div class="doc-bar-dot" id="doc-dot"></div>
       <span id="doc-header-name">No document loaded</span>
     </div>
-    <div class="doc-area" id="doc-area"></div>
+    <div class="doc-area" id="doc-area">
+      <div class="empty-doc" id="landing-content">
+        <div class="empty-eyebrow">BDP Contract Analyser</div>
+        <h2>Built Original.<br>Built Protected.</h2>
+        <p>Select a sample contract to analyse against BDP's legal risk framework.</p>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px;max-width:420px;" id="contract-list">
+          <!-- filled by JS -->
+        </div>
+      </div>
+    </div>
     <div class="status-bar" id="status-bar">Ready</div>
   </div>
 
