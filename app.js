@@ -331,6 +331,16 @@ function renderLanding() {
 // LOADING
 // ═══════════════════════════════════════════════════════════
 
+// ═══════════════════════════════════════════════════════════
+// AI PROXY CONFIG — update this to your domain
+// ═══════════════════════════════════════════════════════════
+
+const AI_PROXY_URL = 'https://2.124.182.3/analyse'; // ← change this to your domain
+
+// ═══════════════════════════════════════════════════════════
+// FILE READING — supports PDF, DOCX, TXT
+// ═══════════════════════════════════════════════════════════
+
 async function readFileText(f) {
   if (f.name.toLowerCase().endsWith('.docx')) {
     const buf = await f.arrayBuffer();
@@ -340,15 +350,34 @@ async function readFileText(f) {
   return await f.text();
 }
 
+async function readFileAsBase64(f) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(f);
+  });
+}
+
 function openFile() {
   const inp = document.createElement('input');
-  inp.type = 'file'; inp.accept = '.txt,.docx';
+  inp.type = 'file'; inp.accept = '.txt,.docx,.pdf';
   inp.onchange = async e => {
     const f = e.target.files[0];
     if (!f) return;
-    const text = await readFileText(f);
+    // Store raw file for AI analysis — also extract text for display
+    let text = '';
+    try {
+      if (f.name.toLowerCase().endsWith('.pdf')) {
+        text = '[PDF — will be analysed by BDP Legal AI]';
+      } else {
+        text = await readFileText(f);
+      }
+    } catch(err) {
+      text = '[File loaded — will be analysed by BDP Legal AI]';
+    }
     activeContractId = null;
-    revisions = [{ id: nextRevisionId++, label: 'Original', name: f.name, text, contractId: null }];
+    revisions = [{ id: nextRevisionId++, label: 'Original', name: f.name, text, rawFile: f, contractId: null }];
     results = null; changes = null; activeRevisionIndex = 0;
     renderRevisionStrip();
     setDoc(revisions[0]);
@@ -400,13 +429,22 @@ function renderDoc(text) {
 
 function addRevision() {
   const inp = document.createElement('input');
-  inp.type = 'file'; inp.accept = '.txt,.docx';
+  inp.type = 'file'; inp.accept = '.txt,.docx,.pdf';
   inp.onchange = async e => {
     const f = e.target.files[0];
     if (!f) return;
-    const text = await readFileText(f);
+    let text = '';
+    try {
+      if (f.name.toLowerCase().endsWith('.pdf')) {
+        text = '[PDF — will be analysed by BDP Legal AI]';
+      } else {
+        text = await readFileText(f);
+      }
+    } catch(err) {
+      text = '[File loaded — will be analysed by BDP Legal AI]';
+    }
     const label = 'Revision ' + revisions.length;
-    revisions.push({ id: nextRevisionId++, label, name: f.name, text, contractId: null });
+    revisions.push({ id: nextRevisionId++, label, name: f.name, text, rawFile: f, contractId: null });
     renderRevisionStrip();
     selectRevisionTab(revisions.length - 1);
   };
@@ -485,6 +523,95 @@ function runAnalysis() {
   if (revisions.length === 0) return;
   document.getElementById('analyse-btn').disabled = true;
   const onRevision = activeRevisionIndex > 0;
+  const currentRev = revisions[activeRevisionIndex];
+  const contractId = currentRev.contractId || activeContractId;
+  const isUserUploaded = !contractId && currentRev.rawFile;
+
+  if (isUserUploaded) {
+    // ── LIVE AI ANALYSIS for uploaded files ──────────────────
+    runAIAnalysis(currentRev, onRevision);
+  } else {
+    // ── DEMO ANALYSIS for sample contracts ───────────────────
+    runDemoAnalysis(contractId, onRevision);
+  }
+}
+
+async function runAIAnalysis(rev, onRevision) {
+  const steps = [
+    ['Extracting document text…', 10],
+    ['Sending to BDP Legal AI…', 25],
+    ['Reading contract structure…', 40],
+    ['Applying BDP risk framework…', 58],
+    ['Checking indemnity clauses…', 72],
+    ['Flagging missing provisions…', 86],
+    ['Generating report…', 94]
+  ];
+  let stepIdx = 0;
+  setStatus(steps[0][0], steps[0][1]);
+  const iv = setInterval(() => {
+    stepIdx++;
+    if (stepIdx < steps.length - 1) setStatus(steps[stepIdx][0], steps[stepIdx][1]);
+  }, 3000);
+
+  try {
+    // Convert file to base64
+    const base64 = await readFileAsBase64(rev.rawFile);
+
+    const response = await fetch(AI_PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        file: base64,
+        filename: rev.name,
+        mimeType: rev.rawFile.type
+      })
+    });
+
+    clearInterval(iv);
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(err.error || 'AI proxy returned an error');
+    }
+
+    results = await response.json();
+
+    // Ensure results have the right shape
+    if (!results.issues) results.issues = [];
+    if (!results.missing) results.missing = [];
+
+    // Extract text for display if PDF
+    if (rev.name.toLowerCase().endsWith('.pdf')) {
+      rev.text = '[PDF analysed by BDP Legal AI — ' + results.sectionsAnalysed + ' sections reviewed]';
+      renderDoc(rev.text);
+    }
+
+    setStatus('AI analysis complete — ' + results.issues.length + ' issues · ' + results.missing.length + ' items to check', 100);
+    setTimeout(() => document.getElementById('progress').style.width = '0%', 1800);
+    renderResults(onRevision);
+
+  } catch (e) {
+    clearInterval(iv);
+    console.error('AI analysis failed:', e);
+
+    // Show connection error with helpful message
+    document.getElementById('issues-list').innerHTML = `
+      <div class="empty-panel">
+        <strong style="color:var(--red)">AI connection failed</strong>
+        <span style="font-size:11px;display:block;margin-top:6px;line-height:1.6">
+          Could not reach BDP Legal AI at:<br>
+          <code style="font-size:10px;background:var(--light-gray);padding:2px 6px;border-radius:2px">${AI_PROXY_URL}</code><br><br>
+          Make sure the proxy server is running on your PC.<br>
+          Error: ${e.message}
+        </span>
+      </div>`;
+    setStatus('AI connection failed — ' + e.message);
+  }
+
+  document.getElementById('analyse-btn').disabled = false;
+}
+
+function runDemoAnalysis(contractId, onRevision) {
   const steps = [
     ['Reading document structure…', 12],
     ['Applying BDP risk framework…', 30],
@@ -501,8 +628,6 @@ function runAnalysis() {
     } else {
       clearInterval(iv);
       setTimeout(() => {
-        const currentRev = revisions[activeRevisionIndex];
-        const contractId = currentRev.contractId || activeContractId;
         const c = CONTRACTS.find(x => x.id === contractId);
         results = c ? c.results : CONTRACTS[0].results;
         setStatus('Analysis complete — ' + results.issues.length + ' issues · ' + results.missing.length + ' items to check', 100);
